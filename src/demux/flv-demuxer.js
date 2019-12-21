@@ -25,27 +25,29 @@ import {IllegalStateException} from '../utils/exception.js';
 
 function Swap16(src) {
     return (((src >>> 8) & 0xFF) |
-            ((src & 0xFF) << 8));
+        ((src & 0xFF) << 8));
 }
 
 function Swap32(src) {
     return (((src & 0xFF000000) >>> 24) |
-            ((src & 0x00FF0000) >>> 8)  |
-            ((src & 0x0000FF00) << 8)   |
-            ((src & 0x000000FF) << 24));
+        ((src & 0x00FF0000) >>> 8)  |
+        ((src & 0x0000FF00) << 8)   |
+        ((src & 0x000000FF) << 24));
 }
 
 function ReadBig32(array, index) {
     return ((array[index] << 24)     |
-            (array[index + 1] << 16) |
-            (array[index + 2] << 8)  |
-            (array[index + 3]));
+        (array[index + 1] << 16) |
+        (array[index + 2] << 8)  |
+        (array[index + 3]));
 }
 
 
 class FLVDemuxer {
 
     constructor(probeData, config) {
+        this.previewObjArray = [];
+        this.preivewObj = new ArrayBuffer(1024 * 1024 * 3);
         this.TAG = 'FLVDemuxer';
 
         this._config = config;
@@ -158,6 +160,7 @@ class FLVDemuxer {
 
     bindDataSource(loader) {
         loader.onDataArrival = this.parseChunks.bind(this);
+        loader.previewObj = this.previewObj;
         return this;
     }
 
@@ -336,11 +339,21 @@ class FLVDemuxer {
             let dataOffset = offset + 11;
 
             switch (tagType) {
-                case 8:  // Audio
-                    this._parseAudioData(chunk, dataOffset, dataSize, timestamp);
+                case 8: {// Audio
+                    //this._parseAudioData(chunk, dataOffset, dataSize, timestamp);
+                    // tmyu 音频数据，放置了我们preview数据，注意跳过音频头 type1+data_len3+time3+time_expend1+streamID3+data
+                    // 这里不能用它的解析函数，需要自定义一个取值函数
+                    this.preivewObj = chunk.slice(offset, offset + 11 + dataSize);
+                    let array_view = new DataView(this.preivewObj, 0, this.preivewObj.byteLength);
+                    let soundSpec = array_view.getUint32(0);
+                    if ((soundSpec & 0x00ffffff) >= 6) { // 小于6时是伪造的音频头，跳过它
+                        this.previewObjArray.push(this.preivewObj);
+                    }
                     break;
+                }
                 case 9:  // Video
                     this._parseVideoData(chunk, dataOffset, dataSize, timestamp, byteStart + offset);
+                    //console.log('video data in ', timestamp);
                     break;
                 case 18:  // ScriptDataObject
                     this._parseScriptData(chunk, dataOffset, dataSize);
