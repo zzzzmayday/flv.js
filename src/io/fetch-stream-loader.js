@@ -117,6 +117,11 @@ class FetchStreamLoader extends BaseLoader {
             params.referrerPolicy = dataSource.referrerPolicy;
         }
 
+        if (self.AbortController) {
+            this._abortController = new self.AbortController();
+            params.signal = this._abortController.signal;
+        }
+
         this._status = LoaderStatus.kConnecting;
         self.fetch(seekConfig.url, params).then((res) => {
             if (this._requestAbort) {
@@ -152,6 +157,10 @@ class FetchStreamLoader extends BaseLoader {
                 }
             }
         }).catch((e) => {
+            if (this._abortController && this._abortController.signal.aborted) {
+                return;
+            }
+
             this._status = LoaderStatus.kError;
             if (this._onError) {
                 this._onError(LoaderErrors.EXCEPTION, {code: -1, msg: e.message});
@@ -163,6 +172,10 @@ class FetchStreamLoader extends BaseLoader {
 
     abort() {
         this._requestAbort = true;
+
+        if (this._abortController) {
+            this._abortController.abort();
+        }
     }
 
     _pump(reader) {  // ReadableStreamReader

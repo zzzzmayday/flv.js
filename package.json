@@ -1,6 +1,6 @@
 {
-  "name": "flv.js",
-  "version": "1.5.0",
+  "name": "modified-flvjs",
+  "version": "1.6.0",
   "description": "HTML5 FLV Player",
   "main": "./dist/flv.js",
   "module": "./src/flv.js",
@@ -8,7 +8,7 @@
   "types": "./d.ts/flv.d.ts",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Bilibili/flv.js"
+    "url": "git+https://github.com/Bilibili/flv.js.git"
   },
   "keywords": [
     "html5",
@@ -46,5 +46,12 @@
     "watchify": "^3.11.0"
   },
   "author": "zheng qian <xqq@xqq.im>",
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/Bilibili/flv.js/issues"
+  },
+  "homepage": "https://github.com/Bilibili/flv.js#readme",
+  "directories": {
+    "doc": "docs"
+  }
 }
