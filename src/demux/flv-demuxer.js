@@ -349,11 +349,29 @@ class FLVDemuxer {
                     if ((soundSpec & 0x00ffffff) >= 6) { // 小于6时是伪造的音频头，跳过它
                         this.previewObjArray.push(this.preivewObj);
                     }
+                    //console.log('preivew data in ', timestamp);
+                    //if (timestamp < 1000)
+                    //  Log.v(this.TAG, `preivew ${timestamp}`);
+                    if (this.has_preview == 0) {
+                        this.has_preview = 1;
+                        this.minus_time = timestamp;
+                    }
                     break;
                 }
                 case 9:  // Video
                     this._parseVideoData(chunk, dataOffset, dataSize, timestamp, byteStart + offset);
                     //console.log('video data in ', timestamp);
+                    //if (timestamp < 1000)
+                    //  Log.v(this.TAG, `video ${timestamp}`);
+                    if (this.has_preview == 0) {
+                        this.minus_time = timestamp;
+                        //Log.v(this.TAG, `minus_time ${timestamp}`);
+                    }
+                    if (this.has_preview == 1) {
+                        this.minus_time = timestamp;
+                        this.has_preview = 2;
+                        //Log.v(this.TAG, `minus_time ${timestamp}`);
+                    }
                     break;
                 case 18:  // ScriptDataObject
                     this._parseScriptData(chunk, dataOffset, dataSize);
