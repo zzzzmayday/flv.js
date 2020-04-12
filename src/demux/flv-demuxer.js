@@ -47,6 +47,7 @@ class FLVDemuxer {
 
     constructor(probeData, config) {
         this.previewObjArray = [];
+        this.has_preview = 0;
         this.preivewObj = new ArrayBuffer(1024 * 1024 * 3);
         this.TAG = 'FLVDemuxer';
 
